@@ -3,9 +3,12 @@ module github.com/xq-libs/go-ms
 go 1.18
 
 require (
+	github.com/BurntSushi/toml v1.2.1
 	github.com/gin-gonic/gin v1.8.2
+	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/samber/lo v1.37.0
 	github.com/xq-libs/go-utils v0.1.3
+	golang.org/x/text v0.5.0
 	gopkg.in/ini.v1 v1.67.0
 	gorm.io/driver/mysql v1.4.4
 	gorm.io/gorm v1.24.2
@@ -31,7 +34,6 @@ require (
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
