@@ -20,7 +20,7 @@ var (
 
 func init() {
 	log.Printf("Load locale config data...")
-	// 1.Load app config
+	// 1.Load server config
 	localeCfg = new(LocaleConfig)
 	config.GetDecryptSectionData(cfgSectionName, localeCfg)
 

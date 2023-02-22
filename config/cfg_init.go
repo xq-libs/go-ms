@@ -1,13 +1,14 @@
 package config
 
 import (
+	"github.com/BurntSushi/toml"
 	"github.com/xq-libs/go-ms/util/os"
 	"gopkg.in/ini.v1"
 	"log"
 )
 
 const (
-	defaultCfgFile = "conf/app.ini"
+	defaultCfgFile = "conf/server.toml"
 	fileEnvName    = "CONFIG_FILE"
 )
 
@@ -21,6 +22,8 @@ func init() {
 	log.Printf("Will load config data from file: %s", cfgFile)
 
 	// 2.Load config data
+	toml.
+	toml.
 	data, err := ini.Load(cfgFile)
 	if err != nil {
 		log.Panicf("Load config file data failure: %v", err)
