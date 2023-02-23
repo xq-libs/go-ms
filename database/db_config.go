@@ -1,6 +1,6 @@
 package database
 
-type DbConfig struct {
+type Config struct {
 	Type     string `ini:"type"`
 	Host     string `ini:"host"`
 	Port     uint   `ini:"port"`

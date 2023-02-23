@@ -16,19 +16,19 @@ const (
 )
 
 var (
-	dbCfg *DbConfig
-	db    *gorm.DB
+	cfg *Config
+	db  *gorm.DB
 )
 
 func init() {
 	// 1.Acquire db config data
-	dbCfg = new(DbConfig)
-	config.GetDecryptSectionData(cfgSectionName, dbCfg)
+	cfg = new(Config)
+	config.GetDecryptSectionData(cfgSectionName, cfg)
 
 	// 2.Create db dsn
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		dbCfg.Username, dbCfg.Password, dbCfg.Host, dbCfg.Port, dbCfg.Database,
+		cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database,
 	)
 
 	newLogger := logger.New(
@@ -54,6 +54,10 @@ func init() {
 
 	db = _db
 	log.Println("Init db done")
+}
+
+func GetConfig() *Config {
+	return cfg
 }
 
 func GetDb() *gorm.DB {

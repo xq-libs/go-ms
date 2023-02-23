@@ -72,6 +72,37 @@ func GetRequestQuery[T any](c *gin.Context, t T) T {
 // Write data to response
 //
 
+type VoidResponseHandler func(ctx *gin.Context) error
+type DataResponseHandler[T any] func(ctx *gin.Context) (T, error)
+
+func HandleVoidResponse(handle VoidResponseHandler) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		err := handle(ctx)
+		SetResponse(ctx, "", err)
+	}
+}
+func HandleDataResponse[T any](handle DataResponseHandler[T]) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		data, err := handle(ctx)
+		SetResponse(ctx, data, err)
+	}
+}
+
+func SetResponse[T any](ctx *gin.Context, data T, err error) {
+	if err != nil {
+		switch err.(type) {
+		case Error:
+			ctx.JSON(http.StatusOK, ResponseWithError(err.(Error)))
+		case error:
+			ctx.JSON(http.StatusInternalServerError, ResponseWithError(NewError(err, ServerError)))
+		default:
+			ctx.JSON(http.StatusInternalServerError, ResponseWithError(NewError(nil, UnknownError)))
+		}
+	} else {
+		ctx.JSON(http.StatusOK, ResponseWithData(data))
+	}
+}
+
 func ResponseSuccess() Response[any] {
 	return Response[any]{
 		Code: SuccessCode,
@@ -101,38 +132,5 @@ func ResponseWithError(err Error) Response[any] {
 		Code: err.Code(),
 		Msg:  err.Error(),
 		Data: nil,
-	}
-}
-
-type VoidResponseHandler func(ctx *gin.Context) error
-
-type DataResponseHandler[T any] func(ctx *gin.Context) (T, error)
-
-func HandleResponseVoid(handle VoidResponseHandler) func(ctx *gin.Context) {
-	return func(ctx *gin.Context) {
-		err := handle(ctx)
-		SetResponse(ctx, "", err)
-	}
-}
-
-func HandleResponseData[T any](handle DataResponseHandler[T]) func(ctx *gin.Context) {
-	return func(ctx *gin.Context) {
-		data, err := handle(ctx)
-		SetResponse(ctx, data, err)
-	}
-}
-
-func SetResponse[T any](ctx *gin.Context, data T, err error) {
-	if err != nil {
-		switch err.(type) {
-		case Error:
-			ctx.JSON(http.StatusOK, ResponseWithError(err.(Error)))
-		case error:
-			ctx.JSON(http.StatusInternalServerError, ResponseWithError(NewError(err, ServerError)))
-		default:
-			ctx.JSON(http.StatusInternalServerError, ResponseWithError(NewError(nil, UnknownError)))
-		}
-	} else {
-		ctx.JSON(http.StatusOK, ResponseWithData(data))
 	}
 }

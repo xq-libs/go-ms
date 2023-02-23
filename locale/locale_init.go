@@ -14,35 +14,38 @@ const (
 )
 
 var (
-	localeCfg    *LocaleConfig
-	localeBundle *i18n.Bundle
+	cfg    *Config
+	bundle *i18n.Bundle
 )
 
 func init() {
 	log.Printf("Load locale config data...")
 	// 1.Load server config
-	localeCfg = new(LocaleConfig)
-	config.GetDecryptSectionData(cfgSectionName, localeCfg)
+	cfg = new(Config)
+	config.GetSectionData(cfgSectionName, cfg)
 
 	// 2.Load default language config
-	defaultLan, err := language.Parse(localeCfg.Default)
+	defaultLang, err := language.Parse(cfg.Default)
 	if err != nil {
 		log.Println("Load locale default config language data failure")
-		defaultLan = language.English
+		defaultLang = language.English
 	}
-	i18n.NewBundle(defaultLan)
 
 	// 3.Create Bundle
-	bundle := i18n.NewBundle(defaultLan)
-	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	_bundle := i18n.NewBundle(defaultLang)
+	_bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	// 4.Load locale files
-	for _, f := range localeCfg.Files {
-		bundle.MustLoadMessageFile(fmt.Sprintf("%s/%s", localeCfg.BaseDir, f))
+	for _, f := range cfg.Files {
+		_bundle.MustLoadMessageFile(fmt.Sprintf("%s/%s", cfg.BaseDir, f))
 	}
-	localeBundle = bundle
+	bundle = _bundle
+}
+
+func GetConfig() *Config {
+	return cfg
 }
 
 func NewLocalizer(languages ...string) *i18n.Localizer {
-	return i18n.NewLocalizer(localeBundle, languages...)
+	return i18n.NewLocalizer(bundle, languages...)
 }

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/xq-libs/go-ms/util/os"
+	"github.com/xq-libs/go-ms/internal/os"
 	"github.com/xq-libs/go-utils/jasypt"
 	"log"
 )

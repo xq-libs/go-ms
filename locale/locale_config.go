@@ -1,7 +1,7 @@
 package locale
 
-type LocaleConfig struct {
-	Default string   `toml:"default"`
-	BaseDir string   `toml:"dir"`
-	Files   []string `toml:"files"`
+type Config struct {
+	Default string   `ini:"default"`
+	BaseDir string   `ini:"dir"`
+	Files   []string `ini:"files"`
 }

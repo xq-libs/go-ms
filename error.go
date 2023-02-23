@@ -1,10 +1,5 @@
 package ms
 
-import (
-	"errors"
-	"gorm.io/gorm"
-)
-
 type Error struct {
 	Cause   error
 	Message Message
@@ -23,20 +18,4 @@ func (e Error) Code() int64 {
 
 func (e Error) Error() string {
 	return e.Message.DefaultValue
-}
-
-func WrapDbError(err error) error {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return Error{
-			Cause:   err,
-			Message: DBNotFoundError,
-		}
-	} else if err != nil {
-		return Error{
-			Cause:   err,
-			Message: DBError,
-		}
-	} else {
-		return nil
-	}
 }

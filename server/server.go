@@ -26,7 +26,7 @@ func init() {
 	log.Println("Load server config data done")
 }
 
-func GetServerConfig() *Config {
+func GetConfig() *Config {
 	return cfg
 }
 
