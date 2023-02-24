@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	defaultCfgFile = "conf/server.toml"
+	defaultCfgFile = "conf/app.ini"
 	fileEnvName    = "CONFIG_FILE"
 )
 
