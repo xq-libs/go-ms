@@ -7,13 +7,23 @@ const (
 
 	DBErrorCode         = 1101
 	DBNotFoundErrorCode = 1102
+
+	RequestQueryErrorCode     = 1201
+	RequestParamErrorCode     = 1202
+	RequestBodyBindErrorCode  = 1203
+	RequestQueryBindErrorCode = 1204
 )
 
 var (
-	Success      = NewMessage(SuccessCode, "ms.success", "Success")
-	ServerError  = NewMessage(ServerErrorCode, "ms.server.error", "Server error")
-	UnknownError = NewMessage(UnknownErrorCode, "ms.server.error.unknown", "Unknown error")
+	Success      = NewMessage(SuccessCode, "MSSuccess", "Success")
+	ServerError  = NewMessage(ServerErrorCode, "MSError", "Server error")
+	UnknownError = NewMessage(UnknownErrorCode, "MSErrorUnknown", "Unknown error")
 
-	DBError         = NewMessage(DBErrorCode, "ms.server.error.db.error", "Db error")
-	DBNotFoundError = NewMessage(DBNotFoundErrorCode, "ms.server.error.db.notFound", "Not Found Record")
+	DBError         = NewMessage(DBErrorCode, "MSErrorDBError", "Db error")
+	DBNotFoundError = NewMessage(DBNotFoundErrorCode, "MSErrorDBNotFound", "Not Found Record")
+
+	RequestQueryError     = NewMessage(RequestQueryErrorCode, "MSErrorQueryRequired", "Request query param {{.param}} missed.")
+	RequestParamError     = NewMessage(RequestParamErrorCode, "MSErrorParamRequired", "Request path param {{.param}} missed.")
+	RequestBodyBindError  = NewMessage(RequestBodyBindErrorCode, "MSErrorBodyBindError", "Request body bind error.")
+	RequestQueryBindError = NewMessage(RequestQueryBindErrorCode, "MSErrorQueryBindError", "Request query param bind error.")
 )

@@ -2,17 +2,32 @@ package ms
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/xq-libs/go-ms/locale"
 	"github.com/xq-libs/go-utils/stringutil"
-	"log"
 	"net/http"
-	"strconv"
 )
 
 // -----------------------------------------------------
 // Get data from request
 //
 
-func GetRequestUser(c *gin.Context) User {
+type Context struct {
+	SourceCtx *gin.Context
+}
+
+func NewContext(ctx *gin.Context) *Context {
+	return &Context{
+		SourceCtx: ctx,
+	}
+}
+
+// GetSourceContext Get original context
+func (ctx *Context) GetSourceContext() *gin.Context {
+	return ctx.SourceCtx
+}
+
+func (ctx *Context) GetRequestUser() User {
 	return User{
 		ID:       "100001",
 		TenantId: "100001",
@@ -21,50 +36,182 @@ func GetRequestUser(c *gin.Context) User {
 	}
 }
 
-func GetRequestPage(c *gin.Context) Pageable {
+func (ctx *Context) GetRequestPage() Pageable {
 	return Pageable{
-		Page: GetQueryInt(c, "page", 0),
-		Size: GetQueryInt(c, "size", 10),
+		Page: ctx.GetQueryInt("page", 0),
+		Size: ctx.GetQueryInt("size", 10),
 	}
 }
 
-func GetQueryInt(c *gin.Context, key string, df int) int {
-	v := c.Query(key)
+// MustGetQueryInt Must get int from request query
+func (ctx *Context) MustGetQueryInt(key string) int {
+	v := ctx.SourceCtx.Query(key)
+	if stringutil.IsBlank(v) {
+		panic(NewError(RequestQueryError.AppendParam("param", key)))
+	}
+	return stringutil.ToInt(v)
+}
+func (ctx *Context) GetQueryInt(key string, df int) int {
+	v := ctx.SourceCtx.Query(key)
 	if stringutil.IsNotBlank(v) {
-		i, err := strconv.Atoi(v)
-		if err != nil {
-			log.Panicf("Value %s is not convert to int", v)
-		}
-		return i
+		return stringutil.ToInt(v)
 	}
 	return df
 }
 
-func GetParamInt(c *gin.Context, key string, df int) int {
-	v := c.Param(key)
+// MustGetQueryInt64 Must get int64 from request query
+func (ctx *Context) MustGetQueryInt64(key string) int64 {
+	v := ctx.SourceCtx.Query(key)
+	if stringutil.IsBlank(v) {
+		panic(NewError(RequestQueryError.AppendParam("param", key)))
+	}
+	return stringutil.ToInt64(v)
+}
+func (ctx *Context) GetQueryInt64(key string, df int64) int64 {
+	v := ctx.SourceCtx.Query(key)
 	if stringutil.IsNotBlank(v) {
-		i, err := strconv.Atoi(v)
-		if err != nil {
-			log.Panicf("Value %s is not convert to int", v)
-		}
-		return i
+		return stringutil.ToInt64(v)
 	}
 	return df
 }
 
-func GetRequestBody[T any](c *gin.Context, t T) T {
-	err := c.ShouldBind(&t)
+// GetParamInt Get int from path
+func (ctx *Context) GetParamInt(key string, df int) int {
+	v := ctx.SourceCtx.Param(key)
+	if stringutil.IsNotBlank(v) {
+		return stringutil.ToInt(v)
+	}
+	return df
+}
+func (ctx *Context) GetParamInt64(key string, df int64) int64 {
+	v := ctx.SourceCtx.Param(key)
+	if stringutil.IsNotBlank(v) {
+		return stringutil.ToInt64(v)
+	}
+	return df
+}
+
+// MustGetQuery Must get string from request query
+func (ctx *Context) MustGetQuery(key string) string {
+	v := ctx.SourceCtx.Query(key)
+	if stringutil.IsBlank(v) {
+		panic(NewError(RequestQueryError.AppendParam("param", key)))
+	}
+	return v
+}
+func (ctx *Context) GetQuery(key string, defaultValue string) string {
+	v := ctx.SourceCtx.Query(key)
+	if stringutil.IsNotBlank(v) {
+		return v
+	}
+	return defaultValue
+}
+
+// MustGetParam Get string from request path
+func (ctx *Context) MustGetParam(key string) string {
+	v := ctx.SourceCtx.Param(key)
+	if stringutil.IsBlank(v) {
+		panic(NewError(RequestParamError.AppendParam("param", key)))
+	}
+	return v
+}
+func (ctx *Context) GetParam(key string, defaultValue string) string {
+	v := ctx.SourceCtx.Param(key)
+	if stringutil.IsNotBlank(v) {
+		return v
+	}
+	return defaultValue
+}
+
+// MustGetRequestBody Get request body
+func (ctx *Context) MustGetRequestBody(obj any) {
+	err := ctx.SourceCtx.ShouldBind(obj)
 	if err != nil {
-		log.Panicf("Bind obj from body failure: %v", err)
+		panic(NewError2(err, RequestBodyBindError))
 	}
+}
+
+// MustGetRequestJsonBody Get request body by json
+func (ctx *Context) MustGetRequestJsonBody(obj any) {
+	err := ctx.SourceCtx.ShouldBindJSON(obj)
+	if err != nil {
+		panic(NewError2(err, RequestBodyBindError))
+	}
+}
+
+// MustGetRequestQuery Get request body by json
+func (ctx *Context) MustGetRequestQuery(obj any) {
+	err := ctx.SourceCtx.ShouldBindQuery(obj)
+	if err != nil {
+		panic(NewError2(err, RequestQueryBindError))
+	}
+}
+
+func (ctx *Context) GetErrorResponse(err Error) Response[any] {
+	return Response[any]{
+		Code: err.Code(),
+		Msg:  ctx.LocalizeMessage(err.Message),
+	}
+}
+
+func (ctx *Context) GetSuccessResponse(data any) Response[any] {
+	return Response[any]{
+		Code: SuccessCode,
+		Msg:  ctx.LocalizeMessage(Success),
+		Data: data,
+	}
+}
+
+func (ctx *Context) Response(data any, err error) {
+	if err != nil {
+		switch err.(type) {
+		case Error:
+			ctx.ResponseJson(http.StatusOK, ctx.GetErrorResponse(err.(Error)))
+		case error:
+			ctx.ResponseJson(http.StatusInternalServerError, ctx.GetErrorResponse(NewError2(err, ServerError)))
+		default:
+			ctx.ResponseJson(http.StatusInternalServerError, ctx.GetErrorResponse(NewError(UnknownError)))
+		}
+	} else {
+		ctx.ResponseJson(http.StatusOK, ctx.GetSuccessResponse(data))
+	}
+}
+
+func (ctx *Context) ResponseJson(code int, obj any) {
+	ctx.SourceCtx.JSON(code, obj)
+}
+
+// GetLocalizer Create a Localizer for acquire localize message
+func (ctx *Context) GetLocalizer() *i18n.Localizer {
+	acceptLang := ctx.SourceCtx.GetHeader("Accept-Language")
+	return locale.NewLocalizer(acceptLang)
+}
+
+// LocalizeMessage Localize message with Localizer
+func (ctx *Context) LocalizeMessage(message Message) string {
+	localizer := ctx.GetLocalizer()
+	return localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID:    message.Key,
+			Other: message.DefaultValue,
+		},
+		TemplateData: message.ParamMap,
+	})
+}
+
+// -----------------------------------------------------------
+// Common get request method
+
+func MustGetRequestBody[T any](c Context, t T) T {
+	c.MustGetRequestBody(t)
 	return t
 }
-
-func GetRequestQuery[T any](c *gin.Context, t T) T {
-	err := c.ShouldBindQuery(&t)
-	if err != nil {
-		log.Panicf("Bind obj from query failure: %v", err)
-	}
+func MustGetRequestJsonBody[T any](c Context, t T) T {
+	c.MustGetRequestJsonBody(t)
+	return t
+}
+func MustGetRequestQuery[T any](c Context, t T) T {
+	c.MustGetRequestQuery(t)
 	return t
 }
 
@@ -72,65 +219,19 @@ func GetRequestQuery[T any](c *gin.Context, t T) T {
 // Write data to response
 //
 
-type VoidResponseHandler func(ctx *gin.Context) error
-type DataResponseHandler[T any] func(ctx *gin.Context) (T, error)
+type VoidResponseHandler func(ctx *Context) error
+type DataResponseHandler[T any] func(ctx *Context) (T, error)
 
 func HandleVoidResponse(handle VoidResponseHandler) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		err := handle(ctx)
-		SetResponse(ctx, "", err)
+		c := NewContext(ctx)
+		c.Response("", handle(c))
 	}
 }
+
 func HandleDataResponse[T any](handle DataResponseHandler[T]) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		data, err := handle(ctx)
-		SetResponse(ctx, data, err)
-	}
-}
-
-func SetResponse[T any](ctx *gin.Context, data T, err error) {
-	if err != nil {
-		switch err.(type) {
-		case Error:
-			ctx.JSON(http.StatusOK, ResponseWithError(err.(Error)))
-		case error:
-			ctx.JSON(http.StatusInternalServerError, ResponseWithError(NewError(err, ServerError)))
-		default:
-			ctx.JSON(http.StatusInternalServerError, ResponseWithError(NewError(nil, UnknownError)))
-		}
-	} else {
-		ctx.JSON(http.StatusOK, ResponseWithData(data))
-	}
-}
-
-func ResponseSuccess() Response[any] {
-	return Response[any]{
-		Code: SuccessCode,
-		Msg:  Success.DefaultValue,
-		Data: nil,
-	}
-}
-
-func ResponseError(err error) Response[any] {
-	return Response[any]{
-		Code: ServerErrorCode,
-		Msg:  err.Error(),
-		Data: nil,
-	}
-}
-
-func ResponseWithData[T any](data T) Response[T] {
-	return Response[T]{
-		Code: SuccessCode,
-		Msg:  Success.DefaultValue,
-		Data: data,
-	}
-}
-
-func ResponseWithError(err Error) Response[any] {
-	return Response[any]{
-		Code: err.Code(),
-		Msg:  err.Error(),
-		Data: nil,
+		c := NewContext(ctx)
+		c.Response(handle(c))
 	}
 }

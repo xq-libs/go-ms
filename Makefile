@@ -1,5 +1,8 @@
 VERSION = `cat VERSION`
 
+tidy:
+	go mod tidy
+
 check:
 	go fmt ./...
 	go vet ./...

@@ -2,11 +2,8 @@ package ms
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/xq-libs/go-ms/config"
 	"github.com/xq-libs/go-ms/database"
-	"github.com/xq-libs/go-ms/locale"
 	"github.com/xq-libs/go-ms/server"
 	"gorm.io/gorm"
 	"log"
@@ -34,24 +31,6 @@ func GetConfigData(name string, data interface{}) {
 // GetDecryptConfigData Get config data with section name and decrypt it by jasypt
 func GetDecryptConfigData(name string, data interface{}) {
 	config.GetDecryptSectionData(name, data)
-}
-
-// NewLocalizer Create a Localizer for acquire localize message
-func NewLocalizer(ctx *gin.Context) *i18n.Localizer {
-	acceptLang := ctx.GetHeader("Accept-Language")
-	return locale.NewLocalizer(acceptLang)
-}
-
-// LocalizeMessage Localize message with Localizer
-func LocalizeMessage(ctx *gin.Context, message Message) string {
-	localizer := NewLocalizer(ctx)
-	return localizer.MustLocalize(&i18n.LocalizeConfig{
-		DefaultMessage: &i18n.Message{
-			ID:    message.Key,
-			Other: message.DefaultValue,
-		},
-		TemplateData: message.ArgMap,
-	})
 }
 
 // GetDb get db instance
