@@ -202,15 +202,15 @@ func (ctx *Context) LocalizeMessage(message Message) string {
 // -----------------------------------------------------------
 // Common get request method
 
-func MustGetRequestBody[T any](c Context, t T) T {
+func MustGetRequestBody[T any](c *Context, t T) T {
 	c.MustGetRequestBody(t)
 	return t
 }
-func MustGetRequestJsonBody[T any](c Context, t T) T {
+func MustGetRequestJsonBody[T any](c *Context, t T) T {
 	c.MustGetRequestJsonBody(t)
 	return t
 }
-func MustGetRequestQuery[T any](c Context, t T) T {
+func MustGetRequestQuery[T any](c *Context, t T) T {
 	c.MustGetRequestQuery(t)
 	return t
 }
