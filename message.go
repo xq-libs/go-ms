@@ -1,5 +1,7 @@
 package ms
 
+import "github.com/xq-libs/go-utils/stringutil"
+
 type Message struct {
 	Code         int64
 	Key          string
@@ -70,5 +72,5 @@ func (m *Message) AppendParam5(k1 string, v1 string, k2 string, v2 string, k3 st
 }
 
 func (m *Message) GetDefaultMessage() string {
-	return m.DefaultValue
+	return stringutil.MustParseTemplate(m.DefaultValue, m.ParamMap)
 }

@@ -29,5 +29,5 @@ func (e Error) Error() string {
 	if e.Cause != nil {
 		return fmt.Sprintf("Message: %s, error: %v", e.Message.GetDefaultMessage(), e.Cause)
 	}
-	return e.Message.DefaultValue
+	return e.Message.GetDefaultMessage()
 }

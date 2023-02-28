@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/samber/lo v1.37.0
-	github.com/xq-libs/go-utils v0.1.4
+	github.com/xq-libs/go-utils v0.1.5
 	golang.org/x/text v0.7.0
 	gopkg.in/ini.v1 v1.67.0
 	gorm.io/driver/mysql v1.4.7
