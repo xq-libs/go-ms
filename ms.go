@@ -2,6 +2,8 @@ package ms
 
 import (
 	"errors"
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/xq-libs/go-ms/config"
 	"github.com/xq-libs/go-ms/database"
 	"github.com/xq-libs/go-ms/server"
@@ -52,5 +54,20 @@ func WrapDbError(err error) error {
 		}
 	} else {
 		return nil
+	}
+}
+
+func CustomerRecoveryFunc(sourceCtx *gin.Context, err any) {
+	ctx := NewContext(sourceCtx)
+	switch e := err.(type) {
+	case Error:
+		ctx.ResponseJson(http.StatusOK, ctx.GetErrorResponse(e))
+	case error:
+		ctx.ResponseJson(http.StatusInternalServerError, ctx.GetErrorResponse(NewError2(e, ServerError)))
+	case string:
+		ctx.ResponseJson(http.StatusInternalServerError, ctx.GetErrorResponse(NewError2(errors.New(e), ServerError)))
+	default:
+		str := fmt.Sprintf("%v", err)
+		ctx.ResponseJson(http.StatusInternalServerError, ctx.GetErrorResponse(NewError2(errors.New(str), UnknownError)))
 	}
 }

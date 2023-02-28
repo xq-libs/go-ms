@@ -124,30 +124,27 @@ func (ctx *Context) GetParam(key string, defaultValue string) string {
 }
 
 // MustGetRequestBody Get request body
-func (ctx *Context) MustGetRequestBody(obj any) any {
+func (ctx *Context) MustGetRequestBody(obj any) {
 	err := ctx.SourceCtx.ShouldBind(obj)
 	if err != nil {
 		panic(NewError2(err, RequestBodyBindError))
 	}
-	return obj
 }
 
 // MustGetRequestJsonBody Get request body by json
-func (ctx *Context) MustGetRequestJsonBody(obj any) any {
+func (ctx *Context) MustGetRequestJsonBody(obj any) {
 	err := ctx.SourceCtx.ShouldBindJSON(obj)
 	if err != nil {
 		panic(NewError2(err, RequestBodyBindError))
 	}
-	return obj
 }
 
 // MustGetRequestQuery Get request body by json
-func (ctx *Context) MustGetRequestQuery(obj any) any {
+func (ctx *Context) MustGetRequestQuery(obj any) {
 	err := ctx.SourceCtx.ShouldBindQuery(obj)
 	if err != nil {
 		panic(NewError2(err, RequestQueryBindError))
 	}
-	return obj
 }
 
 func (ctx *Context) GetErrorResponse(err Error) Response[any] {
