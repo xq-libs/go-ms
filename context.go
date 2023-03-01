@@ -5,6 +5,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/xq-libs/go-ms/locale"
 	"github.com/xq-libs/go-utils/stringutil"
+	"log"
 	"net/http"
 )
 
@@ -226,7 +227,7 @@ type DataResponseHandler[T any] func(ctx *Context) (T, error)
 func HandleEmptyResponse(handle EmptyResponseHandler) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		c := NewContext(ctx)
-		defer func() { c.recoverCustomError() }()
+		defer func() { c.recoverCustomError(recover()) }()
 		handle(c)
 	}
 }
@@ -234,7 +235,7 @@ func HandleEmptyResponse(handle EmptyResponseHandler) func(ctx *gin.Context) {
 func HandleVoidResponse(handle VoidResponseHandler) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		c := NewContext(ctx)
-		defer func() { c.recoverCustomError() }()
+		defer func() { c.recoverCustomError(recover()) }()
 		c.Response("", handle(c))
 	}
 }
@@ -242,13 +243,14 @@ func HandleVoidResponse(handle VoidResponseHandler) func(ctx *gin.Context) {
 func HandleDataResponse[T any](handle DataResponseHandler[T]) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		c := NewContext(ctx)
-		defer func() { c.recoverCustomError() }()
+		defer func() { c.recoverCustomError(recover()) }()
 		c.Response(handle(c))
 	}
 }
 
-func (ctx *Context) recoverCustomError() {
-	if err := recover(); err != nil {
+func (ctx *Context) recoverCustomError(err any) {
+	if err != nil {
+		log.Printf("Get a panic error: %v", err)
 		if customErr, ok := err.(Error); ok {
 			ctx.ResponseJson(http.StatusOK, ctx.GetErrorResponse(customErr))
 		} else {
