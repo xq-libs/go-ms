@@ -219,12 +219,22 @@ func MustGetRequestQuery[T any](c *Context, t T) T {
 // Write data to response
 //
 
+type EmptyResponseHandler func(ctx *Context)
 type VoidResponseHandler func(ctx *Context) error
 type DataResponseHandler[T any] func(ctx *Context) (T, error)
+
+func HandleEmptyResponse(handle EmptyResponseHandler) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		c := NewContext(ctx)
+		defer func() { c.recoverCustomError() }()
+		handle(c)
+	}
+}
 
 func HandleVoidResponse(handle VoidResponseHandler) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		c := NewContext(ctx)
+		defer func() { c.recoverCustomError() }()
 		c.Response("", handle(c))
 	}
 }
@@ -232,6 +242,17 @@ func HandleVoidResponse(handle VoidResponseHandler) func(ctx *gin.Context) {
 func HandleDataResponse[T any](handle DataResponseHandler[T]) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		c := NewContext(ctx)
+		defer func() { c.recoverCustomError() }()
 		c.Response(handle(c))
+	}
+}
+
+func (ctx *Context) recoverCustomError() {
+	if err := recover(); err != nil {
+		if customErr, ok := err.(Error); ok {
+			ctx.ResponseJson(http.StatusOK, ctx.GetErrorResponse(customErr))
+		} else {
+			panic(err)
+		}
 	}
 }
