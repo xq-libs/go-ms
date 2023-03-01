@@ -40,6 +40,7 @@ func init() {
 		_bundle.MustLoadMessageFile(fmt.Sprintf("%s/%s", cfg.BaseDir, f))
 	}
 	bundle = _bundle
+	log.Println("Load locale config data done.")
 }
 
 func GetConfig() *Config {

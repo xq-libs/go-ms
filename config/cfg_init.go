@@ -26,6 +26,7 @@ func init() {
 		log.Panicf("Load config file data failure: %v", err)
 	}
 	cfgData = data
+	log.Println("Load config file data done.")
 }
 
 func GetSectionData(name string, sectionData interface{}) {

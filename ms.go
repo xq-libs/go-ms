@@ -15,6 +15,7 @@ import (
 // StartServer Start server with http handler
 func StartServer(h http.Handler) {
 	// Listen and Server in 0.0.0.0:8080
+	log.Println("Create server with config data..")
 	s := server.NewServer(h)
 
 	// Start Server
