@@ -21,6 +21,10 @@ var (
 )
 
 func init() {
+	// 0.Do nothing without db config
+	if !config.HasSection(cfgSectionName) {
+		return
+	}
 	// 1.Acquire db config data
 	cfg = new(Config)
 	config.GetDecryptSectionData(cfgSectionName, cfg)

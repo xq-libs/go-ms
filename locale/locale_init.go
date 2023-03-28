@@ -19,6 +19,10 @@ var (
 )
 
 func init() {
+	// 0.Do nothing without i18n config
+	if !config.HasSection(cfgSectionName) {
+		return
+	}
 	log.Printf("Load locale config data...")
 	// 1.Load server config
 	cfg = new(Config)

@@ -29,6 +29,10 @@ func init() {
 	log.Println("Load config file data done.")
 }
 
+func HasSection(name string) bool {
+	return cfgData.HasSection(name)
+}
+
 func GetSectionData(name string, sectionData interface{}) {
 	err := cfgData.Section(name).MapTo(sectionData)
 	if err != nil {
