@@ -39,7 +39,7 @@ func (ctx *Context) GetRequestUser() User {
 
 func (ctx *Context) GetRequestPage() Pageable {
 	return Pageable{
-		Page: ctx.GetQueryInt("page", 0),
+		Page: ctx.GetQueryInt("page", 1),
 		Size: ctx.GetQueryInt("size", 10),
 	}
 }
