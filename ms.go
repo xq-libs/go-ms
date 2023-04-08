@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 )
 
 // Listener listener interface
@@ -42,8 +43,7 @@ func StartServer(h http.Handler) {
 
 	// Start Server
 	go func() {
-		err := s.ListenAndServe()
-		if err != nil {
+		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("App Server stop with error %v \n", err)
 		}
 	}()
@@ -65,11 +65,14 @@ func onShutdown() {
 
 func waitExit(s *http.Server) {
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
+	signal.Notify(ch, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
 	sig := <-ch
 	log.Printf("App server got a exit signal: %v", sig)
-	err := s.Shutdown(context.Background())
-	if err != nil {
+	// Create context
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	// Shutdown
+	if err := s.Shutdown(ctx); err != nil {
 		log.Printf("App server shutdown failure: %v", err)
 	}
 	log.Println("App exist success.")
