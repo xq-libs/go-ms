@@ -10,6 +10,18 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"sync"
+)
+
+// Listener listener interface
+type Listener interface {
+	OnStart(s *http.Server)
+	OnShutdown()
+}
+
+var (
+	lcx       = sync.Mutex{}
+	listeners = make([]Listener, 0)
 )
 
 // StartServer Start server with http handler
@@ -18,12 +30,38 @@ func StartServer(h http.Handler) {
 	log.Println("Create server with config data..")
 	s := server.NewServer(h)
 
+	// Register start hook
+	s.RegisterOnShutdown(onShutdown)
+
+	// Invoke on start
+	onStart(s)
+
 	// Start Server
 	log.Printf("App Server started at: %s", s.Addr)
 	err := s.ListenAndServe()
 	if err != nil {
 		log.Fatalf("App Server stop with error %v", err)
 	}
+}
+
+func onStart(s *http.Server) {
+	for _, l := range listeners {
+		l.OnStart(s)
+	}
+}
+
+func onShutdown() {
+	for _, l := range listeners {
+		l.OnShutdown()
+	}
+}
+
+// AddListener add listener
+func AddListener(l Listener) {
+	lcx.Lock()
+	defer lcx.Unlock()
+
+	listeners = append(listeners, l)
 }
 
 // GetConfigData Get config data with section name
