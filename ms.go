@@ -1,6 +1,7 @@
 package ms
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,10 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 )
 
 // Listener listener interface
@@ -27,7 +31,7 @@ var (
 // StartServer Start server with http handler
 func StartServer(h http.Handler) {
 	// Listen and Server in 0.0.0.0:8080
-	log.Println("Create server with config data..")
+	log.Println("App server will create with config data.")
 	s := server.NewServer(h)
 
 	// Register start hook
@@ -37,11 +41,14 @@ func StartServer(h http.Handler) {
 	onStart(s)
 
 	// Start Server
-	log.Printf("App Server started at: %s", s.Addr)
-	err := s.ListenAndServe()
-	if err != nil {
-		log.Fatalf("App Server stop with error %v", err)
-	}
+	go func() {
+		err := s.ListenAndServe()
+		if err != nil {
+			log.Fatalf("App Server stop with error %v \n", err)
+		}
+	}()
+	log.Printf("App Server started at: %s \n", s.Addr)
+	waitExit(s)
 }
 
 func onStart(s *http.Server) {
@@ -54,6 +61,18 @@ func onShutdown() {
 	for _, l := range listeners {
 		l.OnShutdown()
 	}
+}
+
+func waitExit(s *http.Server) {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
+	sig := <-ch
+	log.Printf("App server got a exit signal: %v", sig)
+	err := s.Shutdown(context.Background())
+	if err != nil {
+		log.Printf("App server shutdown failure: %v", err)
+	}
+	log.Println("App exist success.")
 }
 
 // AddListener add listener
