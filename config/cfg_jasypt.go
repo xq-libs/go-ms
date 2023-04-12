@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/xq-libs/go-ms/internal/os"
+	"github.com/xq-libs/go-ms/internal/osutil"
 	"github.com/xq-libs/go-utils/jasypt"
 	"log"
 )
@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	pwd = os.GetEnvValue(jasyptPwdKey, "")
+	pwd = osutil.GetEnvValue(jasyptPwdKey, "")
 	if len(pwd) > 0 {
 		j := jasypt.GetJasypt(jasypt.Options{
 			Password: pwd,

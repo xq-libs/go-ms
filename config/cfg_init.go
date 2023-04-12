@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/xq-libs/go-ms/internal/os"
+	"github.com/xq-libs/go-ms/internal/osutil"
 	"gopkg.in/ini.v1"
 	"log"
+	"os"
 )
 
 const (
@@ -17,7 +18,7 @@ var (
 
 func init() {
 	// 1.Get config file
-	cfgFile := os.GetEnvValue(fileEnvName, defaultCfgFile)
+	cfgFile := osutil.GetEnvValue(fileEnvName, defaultCfgFile)
 	log.Printf("Will load config data from file: %s", cfgFile)
 
 	// 2.Load config data
@@ -25,6 +26,7 @@ func init() {
 	if err != nil {
 		log.Panicf("Load config file data failure: %v", err)
 	}
+	data.ValueMapper = os.ExpandEnv
 	cfgData = data
 	log.Println("Load config file data done.")
 }
