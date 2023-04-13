@@ -109,7 +109,7 @@ func LoadAllServiceInstances() bool {
 	return true
 }
 
-func findAllServiceInstances(groupId string, serviceId string) []ServiceInstance {
+func FindAllServiceInstances(groupId string, serviceId string) []ServiceInstance {
 	lcxInstance.Lock()
 	defer lcxInstance.Unlock()
 

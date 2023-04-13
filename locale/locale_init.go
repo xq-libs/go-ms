@@ -23,7 +23,7 @@ func init() {
 	if !config.HasSection(cfgSectionName) {
 		return
 	}
-	log.Printf("Load locale config data...")
+	log.Printf("Will Load locale config data...")
 	// 1.Load server config
 	cfg = new(Config)
 	config.GetSectionData(cfgSectionName, cfg)

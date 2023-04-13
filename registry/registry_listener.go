@@ -9,7 +9,11 @@ import (
 type RegisterListener struct {
 }
 
-var DefaultListener = RegisterListener{}
+var defaultListener = RegisterListener{}
+
+func GetDefaultListener() *RegisterListener {
+	return &defaultListener
+}
 
 func (l *RegisterListener) OnStart(s *http.Server) {
 	log.Println("Will register current service to registry center.")

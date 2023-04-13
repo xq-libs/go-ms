@@ -25,9 +25,13 @@ func init() {
 	if !config.HasSection(cfgSectionName) {
 		return
 	}
+	log.Println("Will load db config...")
+
 	// 1.Acquire db config data
 	cfg = new(Config)
 	config.GetDecryptSectionData(cfgSectionName, cfg)
+
+	log.Println("Load db config done.")
 
 	// 2.Create db dsn
 	dsn := fmt.Sprintf(
@@ -45,6 +49,8 @@ func init() {
 		},
 	)
 
+	log.Printf("Will connect to db server: %s:%d", cfg.Host, cfg.Port)
+
 	// 3.Create db connections
 	_db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
 	if err != nil {
@@ -57,7 +63,7 @@ func init() {
 	sqlDb.SetMaxIdleConns(5)
 
 	db = _db
-	log.Println("Init db done")
+	log.Println("Init db done.")
 }
 
 func GetConfig() *Config {

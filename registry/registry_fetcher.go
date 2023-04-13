@@ -100,7 +100,7 @@ func loadServiceFetcher(groupId string, serviceId string) *ServiceFetcher {
 	defer lcxFetcher.Unlock()
 
 	// Load all service instance
-	instances := findAllServiceInstances(groupId, serviceId)
+	instances := FindAllServiceInstances(groupId, serviceId)
 	instanceFetchers := make([]*InstanceFetcher, 0)
 	for _, instance := range instances {
 		instanceFetchers = append(instanceFetchers, buildInstanceFetcher(instance))
