@@ -17,7 +17,7 @@ type ServiceFetcher struct {
 type InstanceFetcher struct {
 	Id      string
 	Status  string
-	Config  ServiceInstance
+	Config  *ServiceInstance
 	Fetcher *fetcher.Fetcher
 }
 
@@ -117,7 +117,7 @@ func loadServiceFetcher(groupId string, serviceId string) *ServiceFetcher {
 	return serviceFetcher
 }
 
-func buildInstanceFetcher(instance ServiceInstance) *InstanceFetcher {
+func buildInstanceFetcher(instance *ServiceInstance) *InstanceFetcher {
 	return &InstanceFetcher{
 		Id:      instance.GetInstanceId(),
 		Status:  instance.Status,
@@ -126,7 +126,7 @@ func buildInstanceFetcher(instance ServiceInstance) *InstanceFetcher {
 	}
 }
 
-func buildFetcher(instance ServiceInstance) *fetcher.Fetcher {
+func buildFetcher(instance *ServiceInstance) *fetcher.Fetcher {
 	return fetcher.NewFetcher(fetcher.Config{
 		BaseUrl: fmt.Sprintf("%s:%d", instance.Host, instance.Port),
 	})

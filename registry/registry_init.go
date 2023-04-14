@@ -20,9 +20,12 @@ func init() {
 		return
 	}
 	// 1.Acquire registry config data
+	log.Println("Load registry config data")
 	cfg = new(Config)
-	config.GetSectionData(cfgClientSectionName, &(cfg.Client))
-	config.GetSectionData(cfgInstanceSectionName, &(cfg.Instance))
+	cfg.Client = &ClientConfig{}
+	config.GetSectionData(cfgClientSectionName, cfg.Client)
+	cfg.Instance = &InstanceConfig{}
+	config.GetSectionData(cfgInstanceSectionName, cfg.Instance)
 
 	// 3.Registry config done
 	log.Println("Init registry done")

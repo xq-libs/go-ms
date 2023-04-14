@@ -1,8 +1,8 @@
 package registry
 
 type Config struct {
-	Client   ClientConfig
-	Instance InstanceConfig
+	Client   *ClientConfig
+	Instance *InstanceConfig
 }
 
 type ClientConfig struct {
@@ -15,7 +15,7 @@ type InstanceConfig struct {
 	Group          string `ini:"group"`
 	Service        string `ini:"service"`
 	Host           string `ini:"host"`
-	Port           uint   `ini:"port"`
+	Port           int    `ini:"port"`
 	HomePageUrl    string `ini:"homepageUrl"`
 	HealthCheckUrl string `ini:"healthCheckUrl"`
 }

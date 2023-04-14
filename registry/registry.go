@@ -17,7 +17,7 @@ type ServiceInstance struct {
 	GroupId        string `json:"groupId"`
 	ServiceId      string `json:"serviceId"`
 	Host           string `json:"host"`
-	Port           uint   `json:"port"`
+	Port           int    `json:"port"`
 	Status         string `json:"status"`
 	HomePageUrl    string `json:"homePageUrl"`
 	HealthCheckUrl string `json:"healthCheckUrl"`
@@ -31,7 +31,7 @@ type Response[T any] struct {
 
 var (
 	lcxInstance      = sync.Mutex{}
-	serviceInstances []ServiceInstance
+	serviceInstances []*ServiceInstance
 )
 
 func (i *ServiceInstance) GetInstanceId() string {
@@ -53,8 +53,8 @@ func RegisterServiceInstance() bool {
 	return true
 }
 
-func createRegisterRequest(instance InstanceConfig) ServiceInstance {
-	return ServiceInstance{
+func createRegisterRequest(instance *InstanceConfig) *ServiceInstance {
+	return &ServiceInstance{
 		GroupId:        instance.Group,
 		ServiceId:      instance.Service,
 		Host:           instance.Host,
@@ -80,8 +80,8 @@ func UnregisterServiceInstance() bool {
 	return true
 }
 
-func createUnregisterRequest(instance InstanceConfig) ServiceInstance {
-	return ServiceInstance{
+func createUnregisterRequest(instance *InstanceConfig) *ServiceInstance {
+	return &ServiceInstance{
 		GroupId:   instance.Group,
 		ServiceId: instance.Service,
 		Host:      instance.Host,
@@ -102,20 +102,41 @@ func LoadAllServiceInstances() bool {
 	}
 	// add lock
 	lcxInstance.Lock()
-	serviceInstances = result.Data
+	serviceInstances = convertToServiceInstances(result.Data)
 	lcxInstance.Unlock()
 	// return
 	log.Printf("Registered services are: %v", result.Data)
 	return true
 }
 
-func FindAllServiceInstances(groupId string, serviceId string) []ServiceInstance {
+func convertToServiceInstances(instances []ServiceInstance) []*ServiceInstance {
+	result := make([]*ServiceInstance, 0)
+	for _, instance := range instances {
+		result = append(result, &instance)
+	}
+	return result
+}
+
+func FindAllServiceInstances(groupId string, serviceId string) []*ServiceInstance {
 	lcxInstance.Lock()
 	defer lcxInstance.Unlock()
 
-	result := make([]ServiceInstance, 0)
+	result := make([]*ServiceInstance, 0)
 	for _, instance := range serviceInstances {
 		if instance.GroupId == groupId && instance.ServiceId == serviceId {
+			result = append(result, instance)
+		}
+	}
+	return result
+}
+
+func FindAllActiveServiceInstances(groupId string, serviceId string) []*ServiceInstance {
+	lcxInstance.Lock()
+	defer lcxInstance.Unlock()
+
+	result := make([]*ServiceInstance, 0)
+	for _, instance := range serviceInstances {
+		if instance.GroupId == groupId && instance.ServiceId == serviceId && instance.Status == StatusOk {
 			result = append(result, instance)
 		}
 	}
