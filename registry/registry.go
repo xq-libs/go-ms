@@ -89,6 +89,12 @@ func createUnregisterRequest(instance *InstanceConfig) *ServiceInstance {
 }
 
 func LoadAllServiceInstances() bool {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("Load all service instances from register centor failure: %v", err)
+		}
+	}()
+
 	config := GetConfig()
 	queryParam := fmt.Sprintf("groupId=%s", config.Instance.Group)
 	result, _, err := fetcher.GetJson(config.Client.Url+"/services?"+queryParam, &Response[[]ServiceInstance]{})
